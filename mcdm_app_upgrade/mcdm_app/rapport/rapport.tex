@@ -1,0 +1,1504 @@
+% =====================================================================
+%  Rapport — Plateforme d'aide à la décision multicritère (MCDM)
+%  Module « Aide à la décision » — Prof. Lamrani Alaoui, EMI Rabat
+%  Compilation : pdflatex rapport.tex  (deux passes pour la table des matières)
+% =====================================================================
+\documentclass[11pt,a4paper]{report}
+
+% ---------- Encodage et langue ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ---------- Mise en page ----------
+\usepackage[a4paper,margin=2.5cm,headheight=14pt]{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{enumitem}
+\setlist{itemsep=2pt,topsep=4pt}
+\onehalfspacing
+
+% ---------- Mathématiques ----------
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+
+% ---------- Tableaux, figures, couleurs ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{caption}
+\usepackage[table]{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,babel}
+
+% ---------- Code ----------
+\usepackage{listings}
+
+% ---------- Liens ----------
+\usepackage[hidelinks]{hyperref}
+
+% ---------- Paramètres à compléter ----------
+\newcommand{\auteurs}{\textit{[Nom Prénom de l'étudiant(e)]}}
+\newcommand{\filiere}{\textit{[Filière / option]}}
+\newcommand{\annee}{2025--2026}
+
+% ---------- Couleurs et styles ----------
+\definecolor{emiblue}{HTML}{1C5CAB}
+\definecolor{lightblue}{HTML}{CDE2FB}
+\definecolor{codebg}{HTML}{F6F6F4}
+\definecolor{codecomment}{HTML}{52514E}
+\definecolor{okgreen}{HTML}{006300}
+\definecolor{warnorange}{HTML}{B35A00}
+
+\newcommand{\ok}{\textcolor{okgreen}{\textbf{conforme}}}
+\newcommand{\ecart}{\textcolor{warnorange}{\textbf{écart}}}
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{emiblue}\bfseries,
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{warnorange},
+  showstringspaces=false,
+  frame=single, rulecolor=\color{lightblue},
+  breaklines=true, columns=fullflexible,
+  numbers=left, numberstyle=\tiny\color{codecomment},
+  xleftmargin=1.5em, framexleftmargin=1.5em
+}
+\lstset{style=py}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{emiblue}}{\chaptertitlename\ \thechapter}{12pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{24pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{codecomment}{Plateforme MCDM}}
+\fancyhead[R]{\small\textcolor{codecomment}{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Définition}[chapter]
+\theoremstyle{remark}
+\newtheorem*{remarque}{Remarque}
+
+\renewcommand{\arraystretch}{1.2}
+\renewcommand{\lstlistingname}{Code}
+\renewcommand{\lstlistlistingname}{Liste des codes}
+
+% =====================================================================
+\begin{document}
+
+% ---------------------------------------------------------------------
+% Page de garde
+% ---------------------------------------------------------------------
+\begin{titlepage}
+  \centering
+  {\large Université Mohammed V de Rabat\par}
+  {\Large\bfseries École Mohammadia d'Ingénieurs (EMI)\par}
+  \vspace{0.6cm}
+  {\large Module : Aide à la décision\par}
+  \vspace{2.5cm}
+  {\color{emiblue}\rule{\linewidth}{1.2pt}\par}
+  \vspace{0.4cm}
+  {\Huge\bfseries Conception et réalisation d'une plateforme d'aide à la décision multicritère (MCDM)\par}
+  \vspace{0.4cm}
+  {\Large Pondération, classement, évaluation absolue, MCDM floue et analyse de robustesse sous Streamlit\par}
+  \vspace{0.4cm}
+  {\color{emiblue}\rule{\linewidth}{1.2pt}\par}
+  \vspace{2.5cm}
+  \begin{tabular}{rl}
+    \textbf{Réalisé par :} & \auteurs \\
+    \textbf{Filière :} & \filiere \\
+    \textbf{Encadré par :} & Prof. Lamrani Alaoui \\
+  \end{tabular}
+  \vfill
+  {\large Année universitaire \annee\par}
+\end{titlepage}
+
+% ---------------------------------------------------------------------
+\pagenumbering{roman}
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Ce rapport présente la conception, l'implémentation et la validation d'une plateforme web d'aide à la
+décision multicritère (MCDM) développée en Python avec Streamlit. La plateforme reprend fidèlement les
+formulations mathématiques et la taxonomie du cours \og Aide à la décision \fg{} de l'EMI : définition de
+l'espace de décision (alternatives, critères positifs et négatifs), pondération des critères par des
+méthodes subjectives (AHP, BWM), objectives (Entropie, CRITIC), hybrides ou manuelles, classement des
+alternatives par des méthodes compensatoires (WSM, WPM, WASPAS, TOPSIS, VIKOR) et de surclassement
+(PROMETHEE II), évaluation absolue d'une alternative isolée (MAUT, seuil de décision, courbe ROC, indice de
+Youden, distance à l'idéal), MCDM floue (TOPSIS flou de Chen et TOPSIS flou intuitionniste avec
+l'opérateur IFWA) et analyse de robustesse (perturbation des poids, simulation de Monte Carlo, corrélation
+de rang de Spearman, consensus de Borda).
+
+Dix exercices du cours sont intégrés comme études de cas interactives et résolus pas à pas. Les résultats
+calculés par la plateforme sont confrontés aux valeurs publiées dans les diapositives : ils sont conformes
+pour l'ensemble des cas, à une exception près (BWM, exemple du fournisseur), pour laquelle nous montrons que
+les poids affichés dans le support ne satisfont pas les contraintes du modèle linéaire présenté, alors que
+la valeur optimale $\xi^*\approx 0{,}08$ est bien retrouvée. Une suite de quinze tests automatisés garantit
+la reproductibilité de ces résultats.
+
+\medskip
+\noindent\textbf{Mots-clés :} aide à la décision multicritère, MCDM, AHP, BWM, CRITIC, entropie, TOPSIS,
+VIKOR, WASPAS, PROMETHEE, MAUT, courbe ROC, logique floue, TOPSIS flou, ensembles flous intuitionnistes,
+analyse de sensibilité, corrélation de Spearman, Streamlit.
+
+\tableofcontents
+\listoftables
+\listoffigures
+
+\clearpage
+\pagenumbering{arabic}
+
+% =====================================================================
+\chapter{Introduction générale}
+% =====================================================================
+
+\section{Contexte}
+
+Dans de nombreuses situations, un décideur doit choisir la meilleure option parmi plusieurs alternatives :
+implanter un hôpital dans l'une de quatre villes candidates, électrifier un village isolé par une solution
+solaire, éolienne ou hybride, retenir un fournisseur parmi cinq offres ou sélectionner un projet
+d'investissement. Avec un seul critère, il suffirait de retenir l'alternative la mieux notée. En pratique,
+le choix dépend de plusieurs critères \emph{contradictoires} --- rentabilité, risque, coût, impact social
+ou environnemental --- et aucune alternative n'est généralement la meilleure sur tous les critères. Il faut
+alors pondérer les critères et rechercher une solution de compromis : c'est le rôle des méthodes d'analyse
+multicritère (\emph{Multi-Criteria Decision Making}, MCDM).
+
+\section{Problématique}
+
+Le cours présente une large palette de méthodes, chacune reposant sur des hypothèses différentes
+(compensation ou non entre critères, nature exacte ou imprécise des données, nombre de décideurs, nombre
+d'alternatives). Les appliquer à la main est long et sujet aux erreurs de calcul ; comparer plusieurs
+méthodes et étudier la stabilité d'un classement face à une variation des poids l'est encore davantage.
+D'où la nécessité d'un outil qui :
+\begin{itemize}
+  \item implémente rigoureusement les formulations du cours ;
+  \item expose chaque étape intermédiaire pour garder une valeur pédagogique ;
+  \item permet de comparer les méthodes et d'évaluer la robustesse des décisions.
+\end{itemize}
+
+\section{Objectifs}
+
+La plateforme réalisée doit permettre à l'utilisateur de :
+\begin{enumerate}
+  \item définir l'espace de décision : alternatives, critères et sens de préférence (critère positif
+        \emph{benefit} [+] ou négatif \emph{cost} [$-$]) ;
+  \item choisir une méthode de pondération des critères : subjective, objective, hybride ou manuelle ;
+  \item choisir la portée de l'évaluation : une seule alternative (évaluation absolue) ou plusieurs
+        alternatives (classement ou surclassement) ;
+  \item exécuter des méthodes MCDM classiques (\emph{crisp}) ou floues ;
+  \item mener une analyse de sensibilité et une comparaison des classements entre méthodes ;
+  \item rejouer de manière interactive les études de cas du cours.
+\end{enumerate}
+
+\section{Organisation du rapport}
+
+Le chapitre~\ref{ch:theorie} rappelle le cadre théorique du MCDM. Les chapitres~\ref{ch:ponderation}
+à~\ref{ch:robustesse} détaillent les méthodes implémentées, avec leurs formules exactes et nos choix
+d'implémentation. Le chapitre~\ref{ch:architecture} décrit l'architecture logicielle et le
+chapitre~\ref{ch:interface} l'interface. Le chapitre~\ref{ch:validation} confronte les résultats de la
+plateforme aux exercices du cours et le chapitre~\ref{ch:comparaison} illustre l'analyse comparative et de
+sensibilité sur un cas complet. Nous terminons par les limites, les perspectives et une conclusion.
+
+% =====================================================================
+\chapter{Cadre théorique de l'analyse multicritère}\label{ch:theorie}
+% =====================================================================
+
+\section{MODM et MADM}
+
+On distingue deux grandes familles de méthodes MCDM :
+\begin{itemize}
+  \item l'\textbf{optimisation multi-objectifs} (MODM), qui optimise simultanément
+        $F(x)=(f_1(x),\dots,f_k(x))$ sous des contraintes $g_i(x)\le 0$ sur un espace de décision continu ;
+  \item l'\textbf{analyse multi-attributs} (MADM), qui classe et sélectionne la meilleure alternative parmi
+        un ensemble \emph{fini} de $m$ alternatives $A_1,\dots,A_m$ évaluées selon $n$ critères
+        $C_1,\dots,C_n$.
+\end{itemize}
+La plateforme traite le cas MADM. Le problème est formulé par une matrice de décision et un vecteur de
+poids :
+\begin{equation}
+  D=\begin{pmatrix}
+    x_{11} & x_{12} & \cdots & x_{1n}\\
+    x_{21} & x_{22} & \cdots & x_{2n}\\
+    \vdots & \vdots & \ddots & \vdots\\
+    x_{m1} & x_{m2} & \cdots & x_{mn}
+  \end{pmatrix},\qquad W=(w_1,\dots,w_n),\quad \sum_{j=1}^n w_j=1,
+\end{equation}
+où $x_{ij}$ est le score de l'alternative $A_i$ selon le critère $C_j$.
+
+\section{Typologie des critères}
+
+\begin{itemize}
+  \item \textbf{Sens de préférence} : critères positifs (\emph{benefit}, à maximiser : profit,
+        productivité) et négatifs (\emph{cost}, à minimiser : coût, délai, perte). Nous notons $J$ et $J'$
+        ces deux ensembles.
+  \item \textbf{Relation entre critères} : indépendants ou dépendants (ANP nécessaire dans ce dernier cas).
+  \item \textbf{Nature de la mesure} : quantitatifs, ou qualitatifs exprimés par des variables
+        linguistiques à convertir en échelle numérique.
+\end{itemize}
+
+\section{Taxonomie retenue}\label{sec:taxonomie}
+
+La plateforme est organisée selon les quatre axes de la taxonomie du cours (tableau~\ref{tab:taxonomie}).
+
+\begin{table}[H]
+\centering
+\caption{Taxonomie MADM et couverture par la plateforme}\label{tab:taxonomie}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.4cm}X>{\raggedright\arraybackslash}p{4.2cm}}
+\toprule
+\textbf{Axe} & \textbf{Modalités} & \textbf{Page de la plateforme}\\
+\midrule
+Précision des évaluations & \emph{Crisp} (valeurs exactes) / \emph{Fuzzy} (jugements imprécis) & 3 · Évaluation / 4 · MCDM floue\\
+Nombre de décideurs & \emph{Single} / \emph{Group} (agrégation des avis) & 4 · MCDM floue (K décideurs)\\
+Nombre d'alternatives & Une seule (seuil, référence) / plusieurs (classement) & 3 · Évaluation (choix de la portée)\\
+Étape du processus & Pondération (subjective / objective) puis classement (additif / surclassement) & 2 · Pondération / 3 · Évaluation\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Choix d'une méthode et bonnes pratiques}
+
+Aucune méthode n'est meilleure que les autres dans l'absolu. Le choix dépend :
+\begin{itemize}
+  \item de la \textbf{nature des données} : valeurs exactes $\rightarrow$ méthodes \emph{crisp} ;
+        jugements imprécis ou linguistiques $\rightarrow$ méthodes floues ;
+  \item du \textbf{nombre de décideurs} : un expert $\rightarrow$ \emph{single} ; plusieurs
+        $\rightarrow$ \emph{group} MCDM avec agrégation ;
+  \item de la \textbf{compensation entre critères} : acceptée $\rightarrow$ méthodes additives (WSM,
+        TOPSIS) ; refusée (sécurité, environnement) $\rightarrow$ surclassement (ELECTRE, PROMETHEE) ;
+  \item de l'\textbf{effort demandé au décideur} : AHP exige $n(n-1)/2$ comparaisons, BWM $2n-3$, CRITIC
+        et l'entropie aucune.
+\end{itemize}
+Le cours recommande en outre d'appliquer \emph{plusieurs} méthodes, de comparer les classements, de mener
+une analyse de sensibilité et de justifier explicitement la méthode retenue. La plateforme a été conçue
+pour rendre ces bonnes pratiques immédiates (chapitre~\ref{ch:robustesse}).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=0.55cm and 0.5cm,
+  box/.style={draw=emiblue, fill=lightblue!50, rounded corners=3pt, align=center,
+              minimum height=1.25cm, text width=2.55cm, font=\small},
+  arr/.style={-{Stealth[length=2.5mm]}, thick, emiblue}]
+  \node[box] (p1) {1. Identifier\\le problème};
+  \node[box, right=of p1] (p2) {2. Élaborer les\\alternatives};
+  \node[box, right=of p2] (p3) {3. Critères et\\collecte des données};
+  \node[box, right=of p3] (p4) {4. Pondérer et\\classer};
+  \node[box, below=of p4] (p5) {5. Sensibilité\\et robustesse};
+  \node[box, left=of p5] (p6) {6. Décision\\justifiée};
+  \draw[arr] (p1) -- (p2);
+  \draw[arr] (p2) -- (p3);
+  \draw[arr] (p3) -- (p4);
+  \draw[arr] (p4) -- (p5);
+  \draw[arr] (p5) -- (p6);
+\end{tikzpicture}
+\caption{Processus de prise de décision suivi par la plateforme}\label{fig:processus}
+\end{figure}
+
+% =====================================================================
+\chapter{Pondération des critères}\label{ch:ponderation}
+% =====================================================================
+
+Deux familles de méthodes sont distinguées selon l'origine de l'information :
+\begin{itemize}
+  \item les \textbf{méthodes subjectives} (AHP, BWM) tirent les poids du jugement des experts ; elles
+        reflètent les priorités réelles du décideur mais dépendent de sa cohérence ;
+  \item les \textbf{méthodes objectives} (entropie, CRITIC) calculent les poids à partir de la matrice de
+        décision : plus un critère discrimine les alternatives, plus son poids est élevé ; elles sont
+        reproductibles mais ignorent l'importance stratégique.
+\end{itemize}
+En pratique, on les combine souvent en \textbf{poids hybrides}.
+
+\section{AHP (Analytic Hierarchy Process)}
+
+\subsection{Matrice de comparaison par paires}
+Chaque critère est comparé aux autres sur l'échelle de Saaty de 1 (importance égale) à 9 (extrêmement plus
+important). La matrice $A=(\alpha_{ij})$ est réciproque :
+\begin{equation}
+  \alpha_{ii}=1,\qquad \alpha_{ji}=\frac{1}{\alpha_{ij}}.
+\end{equation}
+Les poids sont le vecteur propre normalisé associé à la plus grande valeur propre : $AW=\lambda_{max}W$.
+
+\subsection{Méthode approximative du cours}
+\begin{enumerate}
+  \item Calculer la somme de chaque colonne : $s_j=\sum_i \alpha_{ij}$.
+  \item Diviser chaque élément par la somme de sa colonne : $\bar\alpha_{ij}=\alpha_{ij}/s_j$.
+  \item Le poids $w_i$ est la moyenne de la ligne $i$ : $w_i=\frac{1}{n}\sum_j \bar\alpha_{ij}$.
+\end{enumerate}
+
+\subsection{Test de consistance}
+\begin{equation}
+  \lambda_{max}=\sum_{i=1}^n s_i\,w_i,\qquad CI=\frac{\lambda_{max}-n}{n-1},\qquad CR=\frac{CI}{RI},
+\end{equation}
+avec l'indice aléatoire $RI$ du tableau~\ref{tab:ri}. La matrice est jugée consistante si $CR<0{,}1$.
+
+\begin{table}[H]
+\centering
+\caption{Indice de consistance aléatoire RI}\label{tab:ri}
+\begin{tabular}{l*{8}{c}}
+\toprule
+$n$ & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\
+\midrule
+RI & 0,58 & 0,90 & 1,12 & 1,24 & 1,32 & 1,41 & 1,45 & 1,56\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{AHP pour le classement}
+Pour chaque critère, une matrice de comparaison des alternatives fournit des \emph{priorités locales}
+$w_{ji}$ (alternative $A_i$ selon $C_j$). La priorité finale est
+\begin{equation}
+  P(A_i)=\sum_{j=1}^n w_j\, w_{ji}.
+\end{equation}
+
+\paragraph{Implémentation.} La fonction \texttt{ahp(A, method)} propose la méthode approximative du cours
+(par défaut) et le calcul exact du vecteur propre par \texttt{numpy.linalg.eig}. L'utilisateur saisit
+uniquement le triangle supérieur (les fractions telles que \texttt{1/3} sont acceptées) ; le triangle
+inférieur est complété par réciprocité, ce qui rend impossible une matrice non réciproque. Pour $n=1,2$,
+$RI=0$ et la matrice est toujours consistante ; au-delà de $n=10$ on utilise les valeurs étendues de Saaty.
+La fonction \texttt{ahp\_rank} enchaîne les priorités locales et globales.
+
+\section{BWM (Best-Worst Method)}
+
+\subsection{Principe}
+L'expert désigne le critère le plus important $B$ et le moins important $W$, puis ne compare chaque critère
+qu'à ces deux repères, sur l'échelle 1 à 9 :
+\begin{itemize}
+  \item vecteur \emph{Best-to-Others} $a_{B\cdot}=(a_{B1},\dots,a_{Bn})$ ;
+  \item vecteur \emph{Others-to-Worst} $a_{\cdot W}=(a_{1W},\dots,a_{nW})$.
+\end{itemize}
+BWM demande $2n-3$ comparaisons contre $n(n-1)/2$ pour AHP. Deux contrôles de bon sens s'appliquent :
+$a_{BB}=a_{WW}=1$ et la note la plus élevée du vecteur BO doit porter sur le critère $W$.
+
+\subsection{Modèle linéaire du cours}
+Idéalement $w_B/w_j=a_{Bj}$ et $w_j/w_W=a_{jW}$. Les jugements n'étant jamais parfaitement cohérents, on
+minimise le plus grand écart $\xi$ :
+\begin{equation}
+\begin{aligned}
+  \min\ & \xi\\
+  \text{s.c. }& |w_B-a_{Bj}\,w_j|\le\xi,\quad |w_j-a_{jW}\,w_W|\le\xi,\quad \forall j,\\
+  & \textstyle\sum_j w_j=1,\quad w_j\ge 0,\quad \xi\ge 0.
+\end{aligned}
+\end{equation}
+Chaque valeur absolue est linéarisée en deux contraintes, ce qui donne la forme matricielle
+$A\,x\le b$ avec $x=(w_1,\dots,w_n,\xi)$ :
+\begin{equation}
+\begin{aligned}
+  w_B-a_{Bj}w_j-\xi&\le 0, & -w_B+a_{Bj}w_j-\xi&\le 0,\\
+  w_j-a_{jW}w_W-\xi&\le 0, & -w_j+a_{jW}w_W-\xi&\le 0.
+\end{aligned}
+\end{equation}
+
+\paragraph{Implémentation.} Le programme linéaire est résolu par
+\texttt{scipy.optimize.linprog} (solveur HiGHS) avec $c=(0,\dots,0,1)$, la contrainte d'égalité
+$\sum_j w_j=1$ et les bornes $x\ge 0$. La matrice $A$ et le libellé de chaque contrainte sont affichés dans
+l'interface, ce qui reproduit l'exercice \og écrire ces contraintes sous forme matricielle \fg{} du cours.
+
+\subsection{Variante non linéaire (Rezaei, 2015)}
+À titre de comparaison, la plateforme propose aussi le modèle original
+\begin{equation}
+  \min\ \xi\quad\text{s.c.}\quad \left|\frac{w_B}{w_j}-a_{Bj}\right|\le\xi,\quad
+  \left|\frac{w_j}{w_W}-a_{jW}\right|\le\xi,\quad \sum_j w_j=1,
+\end{equation}
+résolu par SLSQP avec plusieurs points de départ, et le ratio de consistance $CR=\xi^*/CI(a_{BW})$.
+
+\section{Méthode de l'entropie}
+
+L'entropie mesure le désordre contenu dans la colonne d'un critère. Une entropie proche de 1 (valeurs
+uniformes) signifie que le critère distingue mal les alternatives et reçoit un poids faible.
+\begin{equation}
+  p_{ij}=\frac{d_{ij}}{\sum_{i=1}^m d_{ij}},\qquad
+  E_j=-\frac{1}{\ln m}\sum_{i=1}^m p_{ij}\ln p_{ij},\qquad
+  w_j=\frac{1-E_j}{n-\sum_{k=1}^n E_k}.
+\end{equation}
+La quantité $1-E_j$ est le degré de diversification du critère $j$.
+
+\paragraph{Implémentation.} On adopte la convention $0\ln 0=0$. La méthode exige des valeurs positives ou
+nulles ; une erreur explicite est levée sinon. Si toutes les entropies valent 1, on revient à
+l'équipondération.
+
+\section{Méthode CRITIC}
+
+CRITIC (\emph{CRiteria Importance Through Intercriteria Correlation}) combine l'intensité du contraste
+(dispersion) et le conflit entre critères (corrélation).
+\begin{enumerate}
+  \item Normalisation min--max selon le sens du critère :
+  \begin{equation}
+    r_{ij}=\frac{x_{ij}-\min_i x_{ij}}{\max_i x_{ij}-\min_i x_{ij}}\ (j\in J),\qquad
+    r_{ij}=\frac{\max_i x_{ij}-x_{ij}}{\max_i x_{ij}-\min_i x_{ij}}\ (j\in J').
+  \end{equation}
+  \item Coefficient de corrélation de Pearson entre critères :
+  \begin{equation}
+    \rho_{jk}=\frac{\sum_i (r_{ij}-\bar r_j)(r_{ik}-\bar r_k)}
+                   {\sqrt{\sum_i (r_{ij}-\bar r_j)^2\sum_i (r_{ik}-\bar r_k)^2}}.
+  \end{equation}
+  \item Écart-type et quantité d'information :
+  \begin{equation}
+    \sigma_j=\sqrt{\frac{1}{m-1}\sum_i (r_{ij}-\bar r_j)^2},\qquad
+    C_j=\sigma_j\sum_{k=1}^n\bigl(1-|\rho_{jk}|\bigr).
+  \end{equation}
+  \item Poids : $w_j=C_j/\sum_k C_k$.
+\end{enumerate}
+Plus un critère est dispersé et peu corrélé aux autres, plus il est important. Conformément au support, la
+valeur absolue $|\rho_{jk}|$ est utilisée et l'écart-type est calculé avec le dénominateur $m-1$.
+
+\section{Pondération hybride}
+
+Deux combinaisons sont proposées entre un vecteur subjectif $w^{s}$ (AHP, BWM ou manuel) et un vecteur
+objectif $w^{o}$ (entropie ou CRITIC) :
+\begin{equation}
+  w_j=\alpha\,w_j^{s}+(1-\alpha)\,w_j^{o}\quad(\alpha\in[0,1]),\qquad\text{ou}\qquad
+  w_j=\frac{w_j^{s}\,w_j^{o}}{\sum_k w_k^{s}\,w_k^{o}}.
+\end{equation}
+La forme linéaire est celle utilisée dans le cours pour la mise à jour des poids par XAI
+($w_j^{new}=\alpha w_j^{AHP}+(1-\alpha)|\phi_j|/\sum|\phi_j|$).
+
+% =====================================================================
+\chapter{Classement des alternatives}\label{ch:classement}
+% =====================================================================
+
+\section{Normalisation linéaire et solutions idéales}
+
+Pour les méthodes de pondération simple, la matrice est normalisée par
+\begin{equation}
+  r_{ij}=\frac{x_{ij}}{\max_i x_{ij}}\quad (j\in J),\qquad
+  r_{ij}=\frac{\min_i x_{ij}}{x_{ij}}\quad (j\in J'),
+\end{equation}
+de sorte que $r_{ij}\in\,]0,1]$ et que 1 corresponde toujours à la meilleure valeur. Les solutions idéales
+positive et négative sont $A^+=\{x_1^+,\dots,x_n^+\}$ et $A^-=\{x_1^-,\dots,x_n^-\}$.
+
+\section{WSM, WPM et WASPAS}
+
+\begin{align}
+  \text{WSM :}\quad & Q_i^{(1)}=\sum_{j=1}^n w_j\,r_{ij},\\
+  \text{WPM :}\quad & Q_i^{(2)}=\prod_{j=1}^n r_{ij}^{\,w_j},\\
+  \text{WASPAS :}\quad & Q_i=\lambda\,Q_i^{(1)}+(1-\lambda)\,Q_i^{(2)},\qquad \lambda\in[0,1].
+\end{align}
+WASPAS (Zavadskas et al., 2012) correspond à $\lambda=0{,}5$ dans sa forme de base ; la plateforme laisse
+$\lambda$ réglable. Pour les trois méthodes, l'alternative de score le plus élevé est la meilleure.
+
+\section{TOPSIS}
+
+TOPSIS (Hwang et Yoon, 1981) choisit l'alternative la plus proche de la solution idéale positive et la plus
+éloignée de la solution idéale négative.
+\begin{enumerate}
+  \item Normalisation vectorielle : $r_{ij}=x_{ij}\big/\sqrt{\sum_i x_{ij}^2}$.
+  \item Matrice normalisée pondérée : $v_{ij}=w_j\,r_{ij}$.
+  \item Solutions idéales : $v_j^*=\max_i v_{ij}$ si $j\in J$, $\min_i v_{ij}$ si $j\in J'$ ; et
+        inversement pour $v_j'$.
+  \item Mesures de séparation :
+  \begin{equation}
+    S_i^+=\sqrt{\sum_j (v_j^*-v_{ij})^2},\qquad S_i^-=\sqrt{\sum_j (v_j'-v_{ij})^2}.
+  \end{equation}
+  \item Coefficient de proximité : $RC_i^*=\dfrac{S_i^-}{S_i^-+S_i^+}\in[0,1]$ ; le plus élevé est le
+        meilleur.
+\end{enumerate}
+
+\section{VIKOR}
+
+VIKOR (méthode de classement de compromis) recherche une solution qui maximise l'utilité de groupe et
+minimise le regret individuel.
+\begin{enumerate}
+  \item Meilleures et pires valeurs : $x_j^*=\max_i x_{ij}$, $x_j^-=\min_i x_{ij}$ pour un critère positif
+        (inversement pour un critère négatif).
+  \item Utilité et regret :
+  \begin{equation}
+    S_i=\sum_j w_j\frac{x_j^*-x_{ij}}{x_j^*-x_j^-},\qquad
+    R_i=\max_j\left[w_j\frac{x_j^*-x_{ij}}{x_j^*-x_j^-}\right].
+  \end{equation}
+  \item Indice de compromis, avec $S^*=\min S_i$, $S^-=\max S_i$, $R^*=\min R_i$, $R^-=\max R_i$ et
+        $v=0{,}5$ par défaut :
+  \begin{equation}
+    Q_i=v\,\frac{S_i-S^*}{S^--S^*}+(1-v)\,\frac{R_i-R^*}{R^--R^*}.
+  \end{equation}
+  \item Classement selon $S$, $R$ et $Q$ (plus petit = meilleur).
+  \item Solution de compromis $A'$ (plus petit $Q$) si :
+  \begin{itemize}
+    \item \textbf{C1 --- avantage acceptable} : $Q(A'')-Q(A')\ge DQ=\frac{1}{m-1}$ ;
+    \item \textbf{C2 --- stabilité acceptable} : $A'$ est aussi la meilleure selon $S$ et $R$.
+  \end{itemize}
+  Si seule C2 échoue, le compromis est $\{A',A''\}$ ; si C1 échoue, c'est
+  $\{A',\dots,A^{(k)}\}$ avec $Q(A^{(k)})-Q(A')<\frac{1}{m-1}$.
+\end{enumerate}
+
+\paragraph{Implémentation.} Lorsque $x_j^*=x_j^-$ (critère constant), le terme correspondant est nul ;
+lorsque $S^-=S^*$ ou $R^-=R^*$, la fraction correspondante est nulle. Pour les comparaisons inter-méthodes,
+le score \og plus grand = meilleur \fg{} de VIKOR est $1-Q_i$, mais l'interface affiche toujours $Q_i$.
+
+\section{PROMETHEE II (surclassement)}
+
+Le cours place PROMETHEE parmi les méthodes de surclassement, sans compensation entre critères. Les
+diapositives correspondantes ne détaillant pas les formules, nous avons implémenté la formulation standard
+de Brans et Vincke (1985). Pour chaque paire $(a,b)$ et chaque critère, l'écart orienté
+$d_j(a,b)=g_j(a)-g_j(b)$ (signe inversé pour un critère négatif) est transformé en degré de préférence
+$P_j(a,b)\in[0,1]$ par l'une des six fonctions généralisées (tableau~\ref{tab:promethee}). On calcule :
+\begin{equation}
+  \pi(a,b)=\sum_j w_j P_j(a,b),\quad
+  \phi^+(a)=\frac{1}{m-1}\sum_{x}\pi(a,x),\quad
+  \phi^-(a)=\frac{1}{m-1}\sum_{x}\pi(x,a),\quad
+  \phi(a)=\phi^+(a)-\phi^-(a).
+\end{equation}
+PROMETHEE II classe selon le flux net $\phi$ ; PROMETHEE I fournit un préordre partiel (surclassement,
+indifférence, incomparabilité) affiché dans l'interface.
+
+\begin{table}[H]
+\centering
+\caption{Fonctions de préférence PROMETHEE implémentées}\label{tab:promethee}
+\begin{tabular}{lll}
+\toprule
+\textbf{Type} & \textbf{Nom} & \textbf{$P(d)$ pour $d>0$}\\
+\midrule
+I & Usuel & $1$\\
+II & En U (seuil $q$) & $1$ si $d>q$, $0$ sinon\\
+III & En V (seuil $p$) & $\min(d/p,\,1)$\\
+IV & Par paliers ($q$, $p$) & $0$ si $d\le q$ ; $1/2$ si $q<d\le p$ ; $1$ sinon\\
+V & Linéaire ($q$, $p$) & $0$ si $d\le q$ ; $(d-q)/(p-q)$ si $q<d<p$ ; $1$ sinon\\
+VI & Gaussien ($s$) & $1-\exp\left(-d^2/(2s^2)\right)$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\chapter{Évaluation d'une alternative isolée}\label{ch:single}
+% =====================================================================
+
+On évalue une alternative unique $A$ de valeurs $x=(x_1,\dots,x_n)$ et de poids $w$ pour produire un score
+$S(A)$ et une décision (accepter / rejeter, classe A--D, niveau de risque).
+
+\section{MAUT}
+\begin{equation}
+  S(A)=\sum_{j=1}^n w_j\,u_j(x_j),\qquad
+  u_j^{+}(x)=\frac{x-x_j^{min}}{x_j^{max}-x_j^{min}},\qquad
+  u_j^{-}(x)=\frac{x-x_j^{max}}{x_j^{min}-x_j^{max}}.
+\end{equation}
+Les bornes $[x_j^{min},x_j^{max}]$ sont saisies par l'utilisateur (ou reprises de la matrice de décision) ;
+les utilités sont bornées à $[0,1]$. La décision est \og accepter si $S(A)\ge\tau$, rejeter sinon \fg.
+
+\section{Choix du seuil de décision}
+
+\subsection{Seuil fixé par la politique}
+Le seuil $\tau$ est défini par des experts, la réglementation ou les objectifs stratégiques (par exemple
+$\tau=0{,}7$). La plateforme propose aussi une classification en classes A ($S\ge 0{,}8$), B ($\ge 0{,}6$),
+C ($\ge 0{,}4$) et D.
+
+\subsection{Seuil issu des données : courbe ROC}
+À partir d'alternatives passées de scores $S_i$ et de décisions réelles $y_i$, on prédit
+$\hat y_i=1$ si $S_i\ge\tau$. Pour chaque seuil :
+\begin{equation}
+  TPR=\frac{TP}{TP+FN},\qquad FPR=\frac{FP}{FP+TN}.
+\end{equation}
+Deux critères du cours sont implémentés :
+\begin{itemize}
+  \item \textbf{distance au point idéal} $(0,1)$ : minimiser $d=\sqrt{FPR^2+(1-TPR)^2}$ ;
+  \item \textbf{indice de Youden} : maximiser $J=TPR-FPR$.
+\end{itemize}
+Nous y ajoutons la maximisation de l'exactitude et la minimisation d'un coût
+$C=c_{FP}\cdot FP+c_{FN}\cdot FN$ (\og optimisation sensible aux coûts \fg), qui permet de départager les
+seuils à égalité, ainsi que l'aire sous la courbe (AUC, méthode des trapèzes).
+
+\section{Distance à l'idéal}
+Même pour une seule alternative, la logique TOPSIS donne un indice de performance :
+\begin{equation}
+  D^+=\sqrt{\sum_j (x_j-x_j^+)^2},\qquad D^-=\sqrt{\sum_j (x_j-x_j^-)^2},\qquad C=\frac{D^-}{D^++D^-}.
+\end{equation}
+Avec des critères d'unités différentes, la formule brute est dominée par les critères de grande amplitude.
+La plateforme propose donc, en option activée par défaut, de ramener chaque valeur à une utilité
+$u_j=(x_j-x_j^-)/(x_j^+-x_j^-)$ et de pondérer les distances : $D^+=\sqrt{\sum_j w_j(1-u_j)^2}$,
+$D^-=\sqrt{\sum_j w_j u_j^2}$.
+
+\section{Évaluation floue d'une seule alternative}
+Chaque évaluation est un nombre flou triangulaire $\tilde x=(a,b,c)$ ($a$ pessimiste, $b$ le plus probable,
+$c$ optimiste) :
+\begin{enumerate}
+  \item normalisation $\tilde r_j=(a,b,c)/c_j^{max}$ ;
+  \item agrégation $\tilde S=\sum_j w_j\,\tilde r_j$ ;
+  \item défuzzification par le centre de gravité $S=(a+b+c)/3$.
+\end{enumerate}
+La largeur $c-a$ de $\tilde S$ mesure l'incertitude et doit être surveillée en plus du score.
+
+% =====================================================================
+\chapter{MCDM floue}\label{ch:floue}
+% =====================================================================
+
+\section{Rappels sur les nombres flous}
+
+Un nombre flou triangulaire (TFN) $\tilde A=(a_1,a_2,a_3)$ a pour fonction d'appartenance
+\begin{equation}
+  \mu_{\tilde A}(x)=
+  \begin{cases}
+    \dfrac{x-a_1}{a_2-a_1} & a_1\le x\le a_2,\\[6pt]
+    \dfrac{a_3-x}{a_3-a_2} & a_2\le x\le a_3,\\[4pt]
+    0 & \text{sinon.}
+  \end{cases}
+\end{equation}
+Pour deux TFN positifs, $\tilde A\oplus\tilde B=(a_1+b_1,a_2+b_2,a_3+b_3)$,
+$\tilde A\otimes\tilde B=(a_1b_1,a_2b_2,a_3b_3)$ et $\lambda\tilde A=(\lambda a_1,\lambda a_2,\lambda a_3)$.
+
+\section{TOPSIS flou (Chen, 2000)}
+
+Les variables linguistiques servent à évaluer à la fois les alternatives et l'importance des critères
+(tableau~\ref{tab:chen}).
+
+\begin{table}[H]
+\centering
+\caption{Échelles linguistiques de Chen (2000)}\label{tab:chen}
+\begin{tabular}{llcllc}
+\toprule
+\multicolumn{3}{c}{\textbf{Évaluation des alternatives}} & \multicolumn{3}{c}{\textbf{Importance des critères}}\\
+\cmidrule(lr){1-3}\cmidrule(lr){4-6}
+VP & Very poor & (0, 0, 1) & VL & Very low & (0, 0, 0,1)\\
+P & Poor & (0, 1, 3) & L & Low & (0, 0,1, 0,3)\\
+MP & Medium poor & (1, 3, 5) & ML & Medium low & (0,1, 0,3, 0,5)\\
+F & Fair & (3, 5, 7) & M & Medium & (0,3, 0,5, 0,7)\\
+MG & Medium good & (5, 7, 9) & MH & Medium high & (0,5, 0,7, 0,9)\\
+G & Good & (7, 9, 10) & H & High & (0,7, 0,9, 1)\\
+VG & Very good & (9, 10, 10) & VH & Very high & (0,9, 1, 1)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{enumerate}
+  \item Chaque décideur $k$ évalue chaque alternative selon chaque critère : $\tilde x_{ij}^k$.
+  \item Chaque décideur évalue l'importance de chaque critère : $\tilde w_j^k$.
+  \item Évaluations collectives (moyenne des $K$ décideurs) :
+  \begin{equation}
+    \tilde x_{ij}=\frac{1}{K}\left(\tilde x_{ij}^1\oplus\cdots\oplus\tilde x_{ij}^K\right),\qquad
+    \tilde w_j=\frac{1}{K}\left(\tilde w_j^1\oplus\cdots\oplus\tilde w_j^K\right).
+  \end{equation}
+  \item Normalisation :
+  \begin{equation}
+    \tilde r_{ij}=\left(\frac{a_{ij}}{c_j^*},\frac{b_{ij}}{c_j^*},\frac{c_{ij}}{c_j^*}\right),\ c_j^*=\max_i c_{ij}\ (j\in J);\qquad
+    \tilde r_{ij}=\left(\frac{a_j^-}{c_{ij}},\frac{a_j^-}{b_{ij}},\frac{a_j^-}{a_{ij}}\right),\ a_j^-=\min_i a_{ij}\ (j\in J').
+  \end{equation}
+  \item Matrice pondérée : $\tilde v_{ij}=\tilde r_{ij}\otimes\tilde w_j$.
+  \item Solutions idéales : $\tilde v_j^*=(1,1,1)$ et $\tilde v_j^-=(0,0,0)$.
+  \item Distances (méthode du sommet) :
+  \begin{equation}
+    d(\tilde a,\tilde b)=\sqrt{\tfrac13\left[(a_1-b_1)^2+(a_2-b_2)^2+(a_3-b_3)^2\right]},\quad
+    D_i^*=\sum_j d(\tilde v_{ij},\tilde v_j^*),\quad D_i^-=\sum_j d(\tilde v_{ij},\tilde v_j^-).
+  \end{equation}
+  \item Coefficient de proximité : $CC_i=D_i^-/(D_i^-+D_i^*)$ ; on classe par $CC_i$ décroissant.
+\end{enumerate}
+
+\begin{remarque}
+Pour un critère négatif, la normalisation doit inverser l'ordre des composantes afin que
+$\tilde r_{ij}$ reste un TFN ordonné ($r_1\le r_2\le r_3$) : on divise $a_j^-$ par $(c_{ij},b_{ij},a_{ij})$.
+C'est l'écriture retenue ci-dessus et dans le code.
+\end{remarque}
+
+\section{Ensembles flous intuitionnistes}
+
+Un nombre flou intuitionniste (IFN) $\alpha=(\mu,\nu)$ vérifie $\mu,\nu\in[0,1]$ et $\mu+\nu\le 1$ ;
+$\pi=1-\mu-\nu$ est le degré d'hésitation. Les opérations utilisées sont :
+\begin{equation}
+  \alpha_1\oplus\alpha_2=(\mu_1+\mu_2-\mu_1\mu_2,\ \nu_1\nu_2),\qquad
+  \alpha_1\otimes\alpha_2=(\mu_1\mu_2,\ \nu_1+\nu_2-\nu_1\nu_2),
+\end{equation}
+la fonction score $S(\alpha)=\mu-\nu$, la précision $H(\alpha)=\mu+\nu$, et l'opérateur d'agrégation
+\begin{equation}
+  IFWA_\sigma(\alpha_1,\dots,\alpha_K)=\left(1-\prod_{k=1}^K(1-\mu_k)^{\sigma_k},\ \prod_{k=1}^K\nu_k^{\sigma_k}\right).
+\end{equation}
+
+\section{TOPSIS flou intuitionniste}
+
+\begin{enumerate}
+  \item Identifier les alternatives, les critères et les décideurs $D_1,\dots,D_K$ de poids
+        $\sigma_k$ ($\sum_k\sigma_k=1$).
+  \item Chaque décideur fournit une matrice d'IFN $\alpha_{ij}^k=(\mu_{ij}^k,\nu_{ij}^k)$.
+  \item Agrégation des matrices par IFWA : $\alpha_{ij}=IFWA_\sigma(\alpha_{ij}^1,\dots,\alpha_{ij}^K)$.
+  \item Agrégation des poids des critères par IFWA : $w_j=IFWA_\sigma(w_j^1,\dots,w_j^K)$.
+  \item Matrice pondérée : $\alpha'_{ij}=\alpha_{ij}\otimes w_j$.
+  \item Solutions idéales : pour $j\in J$, $I^+=(\max_i\mu'_{ij},\min_i\nu'_{ij})$ et
+        $I^-=(\min_i\mu'_{ij},\max_i\nu'_{ij})$ ; inversement pour $j\in J'$.
+  \item Mesures de séparation (distance euclidienne normalisée) :
+  \begin{equation}
+    S_i^{\pm}=\sqrt{\frac{1}{2n}\sum_{j=1}^n\left[(\mu'_{ij}-\mu_j^{\pm})^2+(\nu'_{ij}-\nu_j^{\pm})^2+(\pi'_{ij}-\pi_j^{\pm})^2\right]}.
+  \end{equation}
+  \item Coefficient de proximité $C_i=S_i^-/(S_i^-+S_i^+)$ et classement décroissant.
+\end{enumerate}
+Les échelles linguistiques intuitionnistes par défaut sont celles de Boran et al.\ (2009) ; elles sont
+modifiables dans l'interface, et la contrainte $\mu+\nu\le 1$ est vérifiée.
+
+% =====================================================================
+\chapter{Analyse de robustesse et comparaison des méthodes}\label{ch:robustesse}
+% =====================================================================
+
+\section{Corrélation de rang de Spearman}
+Pour deux classements des mêmes $n$ alternatives :
+\begin{equation}
+  \rho=1-\frac{6\sum_i d_i^2}{n(n^2-1)},\qquad d_i=\text{rang}_1(A_i)-\text{rang}_2(A_i).
+\end{equation}
+$\rho=1$ : classements identiques ; $\rho=0$ : aucun lien ; $\rho=-1$ : classements inversés. En présence
+d'ex aequo, la formule n'est plus exacte : la plateforme bascule alors sur
+\texttt{scipy.stats.spearmanr}. Le seuil de significativité bilatéral à 5\,\% est affiché pour
+$n\le 20$ (par exemple $0{,}886$ pour $n=6$).
+
+\section{Perturbation d'un poids}
+Le poids du critère $j$ parcourt $[0,1]$ ; les autres poids sont redistribués proportionnellement à leurs
+valeurs initiales pour conserver leurs rapports :
+\begin{equation}
+  w'_j=v,\qquad w'_k=w_k\,\frac{1-v}{1-w_j}\quad(k\ne j).
+\end{equation}
+La plateforme trace les scores (ou les rangs) en fonction de $v$ et signale les valeurs de $v$ pour
+lesquelles l'alternative classée première change.
+
+\section{Simulation de Monte Carlo}
+Des vecteurs de poids $w'\sim\text{Dirichlet}(\kappa\,w)$ sont tirés autour des poids actifs ($\kappa$
+règle l'intensité de la perturbation). Pour chaque tirage on recalcule le classement ; on obtient la
+fréquence de chaque rang par alternative et la distribution de $\rho$ entre le classement perturbé et le
+classement de référence.
+
+\section{Consensus}
+Un classement de consensus est obtenu par comptage de Borda : on somme les rangs attribués par chaque
+méthode et on classe par somme croissante.
+
+% =====================================================================
+\chapter{Architecture et implémentation}\label{ch:architecture}
+% =====================================================================
+
+\section{Pile technologique}
+
+\begin{table}[H]
+\centering
+\caption{Pile technologique}\label{tab:stack}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Composant} & \textbf{Rôle}\\
+\midrule
+Python 3.10+ & Langage (testé sous Python 3.13)\\
+Streamlit & Interface web : \texttt{st.data\_editor}, \texttt{st.tabs}, \texttt{st.sidebar}, \texttt{st.metric}, \texttt{st.latex}\\
+NumPy & Calcul matriciel (normalisations, distances, valeurs propres)\\
+SciPy & \texttt{optimize.linprog} (BWM linéaire), \texttt{optimize.minimize} (BWM non linéaire), \texttt{stats.rankdata}, \texttt{stats.spearmanr}\\
+Pandas & Tableaux affichés et édités\\
+Plotly & Graphiques interactifs : radar, barres, courbes de sensibilité, courbe ROC, cartes de chaleur\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Structure du projet}
+
+\begin{lstlisting}[language={},numbers=none,caption={Arborescence du projet}]
+mcdm_app/
+|-- app.py                     # point d'entree, navigation, etat global
+|-- requirements.txt
+|-- core/                      # moteur de calcul (aucune dependance a Streamlit)
+|   |-- weighting.py           # AHP, BWM (lineaire et non lineaire), Entropie, CRITIC, hybride
+|   |-- crisp_ranking.py       # normalisations, WSM, WPM, WASPAS, TOPSIS, VIKOR
+|   |-- outranking.py          # PROMETHEE I / II
+|   |-- single_alternative.py  # MAUT, seuil, ROC / Youden, distance a l'ideal, TFN
+|   |-- fuzzy_mcdm.py          # TOPSIS flou (Chen 2000), IFWA, TOPSIS flou intuitionniste
+|   `-- sensitivity.py         # perturbation, Monte Carlo, Spearman, Borda
+|-- utils/
+|   |-- presets.py             # exercices du cours pre-charges
+|   `-- validation.py          # controles de dimension, de coherence, de domaine
+|-- ui/                        # une page Streamlit par module
+|   |-- common.py              # etat de session, editeurs persistants, graphiques
+|   |-- page_space.py  page_weighting.py  page_evaluation.py
+|   `-- page_fuzzy.py  page_sensitivity.py  page_cases.py
+|-- tests/
+|   `-- test_course_examples.py
+`-- rapport/
+    `-- rapport.tex
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=0.5cm and 0.6cm,
+  layer/.style={draw=emiblue, rounded corners=3pt, align=center, font=\small, minimum height=0.9cm},
+  ui/.style={layer, fill=lightblue!60, text width=2.3cm},
+  core/.style={layer, fill=white, text width=2.3cm},
+  arr/.style={-{Stealth[length=2mm]}, emiblue}]
+  \node[layer, fill=emiblue, text=white, text width=12.2cm] (app) {\texttt{app.py} : navigation (barre latérale) et état de session};
+  \node[ui, below=0.6cm of app.south west, anchor=north west] (u1) {Espace de décision};
+  \node[ui, right=0.25cm of u1] (u2) {Pondération};
+  \node[ui, right=0.25cm of u2] (u3) {Évaluation};
+  \node[ui, right=0.25cm of u3] (u4) {Floue / Sensibilité / Cas};
+  \node[core, below=0.9cm of u1] (c1) {\texttt{validation}\\\texttt{presets}};
+  \node[core, below=0.9cm of u2] (c2) {\texttt{weighting}};
+  \node[core, below=0.9cm of u3] (c3) {\texttt{crisp\_ranking}\\\texttt{outranking}\\\texttt{single\_alternative}};
+  \node[core, below=0.9cm of u4] (c4) {\texttt{fuzzy\_mcdm}\\\texttt{sensitivity}};
+  \foreach \i in {1,2,3,4} { \draw[arr] (app.south -| u\i.north) -- (u\i.north); \draw[arr] (u\i) -- (c\i); }
+  \node[draw=codecomment, dashed, rounded corners, fit=(c1)(c4), inner sep=6pt, label={[font=\small\itshape]below:couche \texttt{core} : NumPy / SciPy, testable sans interface}] {};
+\end{tikzpicture}
+\caption{Architecture en couches de la plateforme}\label{fig:archi}
+\end{figure}
+
+\section{Principes de conception}
+
+\begin{itemize}
+  \item \textbf{Séparation calcul / interface.} Le paquet \texttt{core} ne dépend que de NumPy, SciPy et
+        Pandas. Chaque fonction reçoit des tableaux et renvoie un dictionnaire contenant le résultat
+        \emph{et} toutes les grandeurs intermédiaires (matrices normalisées, solutions idéales,
+        distances\dots), ce qui permet à l'interface d'afficher chaque étape du cours et aux tests de
+        vérifier les calculs sans lancer Streamlit.
+  \item \textbf{Conventions uniformes.} Les types de critères sont codés \texttt{"+"} / \texttt{"-"} ;
+        toutes les méthodes renvoient une clé \texttt{scores} (plus grand = meilleur) et une clé
+        \texttt{ranks} (1 = meilleure, ex aequo au rang minimal via \texttt{scipy.stats.rankdata}). Cette
+        interface commune permet aux modules de sensibilité et de consensus d'appeler n'importe quelle
+        méthode de façon générique.
+  \item \textbf{Fidélité au cours.} Chaque formule est commentée avec la notation du support ; lorsque
+        nous nous en écartons (normalisation floue des critères négatifs, option de normalisation pour la
+        distance à l'idéal), l'écart est signalé dans l'interface et dans ce rapport.
+  \item \textbf{Robustesse numérique.} Les divisions par zéro (critère constant, colonne nulle) sont
+        traitées explicitement ; les domaines de validité sont contrôlés (valeurs strictement positives
+        pour WPM et la normalisation $\min/x$, $a\le b\le c$ pour les TFN, $\mu+\nu\le1$ pour les IFN,
+        réciprocité et échelle de Saaty pour AHP, contrôles de bon sens BWM).
+\end{itemize}
+
+\section{Gestion de l'état et des tableaux éditables}
+
+Streamlit réexécute le script à chaque interaction et détruit l'état d'un widget dès qu'il n'est plus
+affiché (changement de page). Pour que les tableaux saisis par l'utilisateur survivent à la navigation, nous
+avons écrit un \emph{éditeur persistant} : la valeur éditée est recopiée dans \texttt{st.session\_state},
+et la base de l'éditeur n'est réinitialisée à partir de cette copie que lorsque le widget a disparu. Un
+numéro de version incrémenté à chaque changement de structure (chargement d'un exercice, ajout d'un
+critère) force la recréation propre de l'éditeur.
+
+\begin{lstlisting}[caption={Editeur persistant (ui/common.py)}]
+def persistent_editor(name, default, **kwargs):
+    store, base = f"_val_{name}", f"_base_{name}"
+    key = f"_ed_{name}_{ss.get(f'_v_{name}', 0)}"
+    if store not in ss:
+        ss[store] = default.copy()
+    if key not in ss:                 # widget absent : on repart de la derniere valeur
+        ss[base] = ss[store].copy()
+    edited = st.data_editor(ss[base], key=key, **kwargs)
+    ss[store] = edited
+    return edited
+\end{lstlisting}
+
+Lorsque l'utilisateur renomme, ajoute ou supprime un critère ou une alternative, la matrice de décision et
+le vecteur de poids sont réindexés : les valeurs sont conservées par nom, ou par position en cas de
+renommage, et les nouveaux critères reçoivent le poids moyen avant renormalisation.
+
+\section{Extraits de code}
+
+\begin{lstlisting}[caption={BWM lineaire : construction de A x <= b et resolution (core/weighting.py)}]
+def bwm(best, worst, a_BO, a_OW):
+    n = len(a_BO)
+    c = np.zeros(n + 1); c[-1] = 1.0          # min xi
+    rows = []
+    for j in range(n):
+        r = np.zeros(n + 1); r[best] += 1; r[j] -= a_BO[j]; r[-1] = -1; rows.append(r)
+        r = np.zeros(n + 1); r[best] -= 1; r[j] += a_BO[j]; r[-1] = -1; rows.append(r)
+        r = np.zeros(n + 1); r[j] += 1; r[worst] -= a_OW[j]; r[-1] = -1; rows.append(r)
+        r = np.zeros(n + 1); r[j] -= 1; r[worst] += a_OW[j]; r[-1] = -1; rows.append(r)
+    A_eq = np.zeros((1, n + 1)); A_eq[0, :n] = 1.0   # somme des poids = 1
+    res = linprog(c, A_ub=np.array(rows), b_ub=np.zeros(len(rows)),
+                  A_eq=A_eq, b_eq=[1.0], bounds=[(0, None)] * (n + 1), method="highs")
+    return res.x[:n], res.x[-1]
+\end{lstlisting}
+
+\begin{lstlisting}[caption={TOPSIS (core/crisp\_ranking.py, version simplifiee)}]
+def topsis(X, w, types):
+    R = X / np.sqrt((X ** 2).sum(axis=0))                  # etape 1
+    V = R * w                                              # etape 2
+    b = np.array([t == "+" for t in types])
+    v_plus  = np.where(b, V.max(axis=0), V.min(axis=0))    # etape 3
+    v_minus = np.where(b, V.min(axis=0), V.max(axis=0))
+    s_plus  = np.sqrt(((V - v_plus) ** 2).sum(axis=1))     # etape 4
+    s_minus = np.sqrt(((V - v_minus) ** 2).sum(axis=1))
+    return s_minus / (s_plus + s_minus)                    # etape 5
+\end{lstlisting}
+
+% =====================================================================
+\chapter{Interface utilisateur}\label{ch:interface}
+% =====================================================================
+
+L'application se lance par \texttt{streamlit run app.py}. Une barre latérale donne accès à sept pages,
+rappelle le problème courant (dimensions, source des poids actifs) et permet de charger un exercice du cours
+en un clic.
+
+\begin{description}
+  \item[Accueil] Présentation du processus, de la taxonomie et du guide de choix des méthodes.
+  \item[1 · Espace de décision] Deux tableaux éditables (critères avec leur type $+/-$, alternatives) et la
+        matrice de décision. Import et export CSV (une ligne \texttt{type} optionnelle contient les sens de
+        préférence). Contrôles automatiques : valeurs manquantes, noms dupliqués, critère constant, valeurs
+        non positives. Un graphique radar affiche les profils normalisés min--max des alternatives.
+  \item[2 · Pondération] Un onglet par méthode : manuelle, AHP (saisie du triangle supérieur, méthode
+        approximative ou exacte, $\lambda_{max}$, $CI$, $RI$, $CR$ et verdict), BWM (choix de Best et Worst,
+        vecteurs BO et OW, contrôles de bon sens, modèle linéaire ou non linéaire, $\xi^*$, forme matricielle
+        $Ax\le b$), Entropie, CRITIC (avec carte de chaleur des corrélations) et hybride. Le bouton
+        \og Appliquer ces poids \fg{} rend un vecteur actif pour toutes les pages ; un dernier onglet
+        compare graphiquement tous les vecteurs calculés.
+  \item[3 · Évaluation] Choix de la portée. \emph{Plusieurs alternatives} : sélection des méthodes (WSM,
+        WPM, WASPAS, TOPSIS, VIKOR, PROMETHEE II), paramètres ($\lambda$, $v$, fonctions de préférence par
+        critère), tableau de synthèse des rangs et un onglet détaillé par méthode (formules en
+        \LaTeX, tableaux intermédiaires, conditions C1/C2 de VIKOR, préordre PROMETHEE I, graphique des
+        scores). \emph{Une seule alternative} : MAUT avec seuil et classes, seuil par ROC (tableau des seuils
+        testés, optimum de Youden, distance, exactitude, coût, AUC, courbe ROC), distance à l'idéal et
+        évaluation floue.
+  \item[4 · MCDM floue] TOPSIS flou de Chen et TOPSIS flou intuitionniste : nombre de décideurs réglable, un
+        onglet de saisie linguistique par décideur (listes déroulantes), échelles modifiables, poids des
+        décideurs, et résolution étape par étape conforme aux questions du cours.
+  \item[5 · Sensibilité \& consensus] Perturbation d'un poids (scores ou rangs en fonction du poids,
+        détection des inversions), Monte Carlo (carte des fréquences de rang, histogramme de $\rho$,
+        probabilité que la meilleure alternative le reste), consensus (tableau des rangs, Borda, matrice de
+        Spearman, significativité).
+  \item[6 · Études de cas] Dix exercices du cours résolus pas à pas, avec comparaison automatique aux
+        valeurs publiées.
+\end{description}
+
+Les graphiques utilisent une palette catégorielle à ordre fixe (une couleur par alternative, identique
+d'un graphique à l'autre), une rampe séquentielle bleue pour les fréquences et une rampe divergente
+rouge--gris--bleu centrée sur 0 pour les corrélations. Tous sont interactifs (info-bulles au survol).
+
+% =====================================================================
+\chapter{Validation sur les études de cas du cours}\label{ch:validation}
+% =====================================================================
+
+Chaque exercice des diapositives a été saisi dans \texttt{utils/presets.py} et résolu par la plateforme.
+Les tableaux ci-dessous reproduisent les résultats calculés (arrondis à trois ou quatre décimales).
+
+\section{AHP --- achat d'une voiture}
+
+Critères : coût, confort, sécurité. Matrice de comparaison :
+$\begin{pmatrix}1&7&3\\1/7&1&1/3\\1/3&3&1\end{pmatrix}$, sommes des colonnes $(1{,}476;\ 11;\ 4{,}333)$.
+
+\begin{table}[H]
+\centering
+\caption{AHP : matrice normalisée et poids des critères}\label{tab:ahp}
+\begin{tabular}{lcccc}
+\toprule
+ & Coût & Confort & Sécurité & \textbf{Poids $w$}\\
+\midrule
+Coût & 0,6774 & 0,6364 & 0,6923 & \textbf{0,6687}\\
+Confort & 0,0968 & 0,0909 & 0,0769 & \textbf{0,0882}\\
+Sécurité & 0,2258 & 0,2727 & 0,2308 & \textbf{0,2431}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+$\lambda_{max}=3{,}0108$, $CI=0{,}0054$, $RI=0{,}58$, $CR=0{,}0093<0{,}1$ : la matrice est consistante.
+Le calcul exact du vecteur propre donne $(0{,}6694;\ 0{,}0879;\ 0{,}2426)$ et $\lambda_{max}=3{,}0070$,
+très proche de l'approximation.
+
+\begin{table}[H]
+\centering
+\caption{AHP : priorités locales et finales des voitures}\label{tab:ahp2}
+\begin{tabular}{lcccc}
+\toprule
+ & Coût (0,669) & Confort (0,088) & Sécurité (0,243) & \textbf{Priorité finale}\\
+\midrule
+Voiture 1 & 0,875 & 0,167 & 0,100 & \textbf{0,624}\\
+Voiture 2 & 0,125 & 0,833 & 0,900 & 0,376\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La voiture 1 est retenue : le coût, critère dominant, l'emporte sur le confort et la sécurité. Les matrices
+locales $2\times 2$ sont trivialement consistantes ($CR=0$).
+
+\section{BWM --- choix d'un fournisseur}
+
+Best $=C_1$ (qualité), Worst $=C_4$ (RSE), $a_{B\cdot}=(1,3,4,8)$, $a_{\cdot W}=(8,5,3,1)$.
+
+\begin{table}[H]
+\centering
+\caption{BWM : poids obtenus et comparaison avec le support}\label{tab:bwm}
+\begin{tabular}{lccccc}
+\toprule
+ & Qualité & Prix & Délai & RSE & $\xi^*$\\
+\midrule
+Modèle linéaire du cours (plateforme) & 0,563 & 0,216 & 0,162 & 0,060 & 0,0838\\
+Modèle non linéaire (Rezaei 2015) & 0,536 & 0,251 & 0,153 & 0,061 & 0,860\\
+Valeurs de la diapositive (p.~42) & 0,552 & 0,207 & 0,155 & 0,086 & 0,08\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La valeur optimale $\xi^*=0{,}084\approx0{,}08$ du cours est retrouvée, de même que l'ordre des critères
+(qualité $>$ prix $>$ délai $>$ RSE) et le constat que la qualité pèse plus de la moitié de la décision. En
+revanche, les poids affichés sur la diapositive ne sont pas une solution du modèle présenté : avec
+$w=(0{,}552;0{,}207;0{,}155;0{,}086)$, on a par exemple $|w_1-8w_4|=0{,}136$ et $|w_2-5w_4|=0{,}223$,
+ce qui exigerait $\xi\ge0{,}223$. Nous avons vérifié que l'optimum du programme linéaire est \emph{unique}
+(en minimisant puis maximisant chaque $w_j$ sous la contrainte $\xi=\xi^*$, on obtient la même valeur), et
+que le modèle non linéaire ne redonne pas non plus ces poids. La plateforme retient donc la solution exacte
+du modèle du cours et signale l'écart dans l'étude de cas.
+
+\section{CRITIC --- machines de découpage}
+
+Types : $C_1(-)$, $C_2(-)$, $C_3(+)$, $C_4(-)$, tels qu'indiqués dans l'énoncé.
+
+\begin{table}[H]
+\centering
+\caption{CRITIC : grandeurs intermédiaires et poids}\label{tab:critic}
+\begin{tabular}{lcccc}
+\toprule
+ & $C_1$ & $C_2$ & $C_3$ & $C_4$\\
+\midrule
+$\sigma_j$ & 0,4576 & 0,4178 & 0,4787 & 0,4590\\
+$\sum_k(1-|\rho_{jk}|)$ & 0,6876 & 0,8368 & 1,2082 & 2,0680\\
+$C_j$ & 0,3146 & 0,3496 & 0,5784 & 0,9491\\
+\textbf{Poids $w_j$} & \textbf{0,1436} & \textbf{0,1595} & \textbf{0,2639} & \textbf{0,4331}\\
+\midrule
+Entropie (comparaison) & 0,4109 & 0,3337 & 0,1258 & 0,1297\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+$C_1$ et $C_2$ sont fortement corrélés ($\rho_{12}=0{,}91$) et apportent donc une information redondante ;
+$C_4$, presque indépendant des autres, reçoit le poids le plus élevé. La comparaison avec l'entropie
+illustre le constat du cours : deux méthodes objectives peuvent donner des poids très différents, car
+l'entropie ne mesure que la dispersion relative des valeurs brutes (très forte pour $C_1$, de 30 à 300) sans
+tenir compte du sens des critères ni des corrélations. En prolongement, TOPSIS avec les poids CRITIC classe
+$A_3$ en tête ($RC^*=0{,}745$), devant $A_1$ (0,599), $A_4$ (0,354) et $A_2$ (0,319).
+
+\section{WSM, WPM et WASPAS --- choix d'une machine}
+
+Types $(-,-,+,-,+)$ et poids $(0{,}331;\ 0{,}181;\ 0{,}369;\ 0{,}072;\ 0{,}047)$.
+
+\begin{table}[H]
+\centering
+\caption{WSM, WPM et WASPAS ($\lambda=0{,}5$)}\label{tab:waspas}
+\begin{tabular}{lcccc}
+\toprule
+ & $Q^{(1)}$ WSM & $Q^{(2)}$ WPM & $Q$ WASPAS & Rang\\
+\midrule
+$A_1$ & 0,7443 & 0,7289 & 0,7366 & 4\\
+$A_2$ & 0,8310 & 0,8037 & 0,8174 & 3\\
+$A_3$ & 0,8746 & 0,8630 & 0,8688 & 2\\
+$A_4$ & \textbf{0,9110} & \textbf{0,9060} & \textbf{0,9085} & \textbf{1}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Les trois méthodes concordent : la machine $A_4$ est la meilleure.
+
+\section{TOPSIS --- choix d'une voiture}
+
+Critères : style (+), fiabilité (+), économie de carburant (+), coût ($-$) ; poids
+$(0{,}2;\ 0{,}1;\ 0{,}4;\ 0{,}3)$.
+
+\begin{table}[H]
+\centering
+\caption{TOPSIS : matrice normalisée pondérée et solutions idéales}\label{tab:topsis1}
+\begin{tabular}{lcccc}
+\toprule
+ & Style & Fiabilité & Économie & Coût\\
+\midrule
+M1 & 0,0923 & 0,0614 & 0,2179 & 0,1583\\
+M2 & 0,1055 & 0,0477 & 0,1937 & 0,1385\\
+M3 & 0,1187 & 0,0409 & 0,1937 & 0,1780\\
+M4 & 0,0791 & 0,0477 & 0,1937 & 0,1187\\
+\midrule
+$I^+$ & 0,1187 & 0,0614 & 0,2179 & 0,1187\\
+$I^-$ & 0,0791 & 0,0409 & 0,1937 & 0,1780\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{TOPSIS : séparations et coefficient de proximité}\label{tab:topsis2}
+\begin{tabular}{lcccc}
+\toprule
+ & $S^+$ & $S^-$ & $RC^*$ & Rang\\
+\midrule
+M1 & 0,0475 & 0,0396 & 0,4545 & 3\\
+M2 & 0,0366 & 0,0480 & \textbf{0,5678} & \textbf{1}\\
+M3 & 0,0673 & 0,0396 & 0,3703 & 4\\
+M4 & 0,0483 & 0,0597 & 0,5527 & 2\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La marque M2 est sélectionnée, de peu devant M4.
+
+\section{VIKOR --- achat d'une machine}
+
+$C_1(-)$, $C_2(+)$, poids égaux. $x^*=(1;\ 4500)$, $x^-=(5;\ 3000)$.
+
+\begin{table}[H]
+\centering
+\caption{VIKOR : utilité, regret et indice de compromis}\label{tab:vikor}
+\begin{tabular}{lccccc}
+\toprule
+ & $C_1$ & $C_2$ & $S$ & $R$ & $Q$\\
+\midrule
+$A_1$ & 1 & 3000 & 0,500 & 0,500 & 1\\
+$A_2$ & 2 & 3750 & \textbf{0,375} & \textbf{0,250} & \textbf{0}\\
+$A_3$ & 5 & 4500 & 0,500 & 0,500 & 1\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+$A_2$ minimise $Q$. Avantage acceptable : $Q(A'')-Q(A')=1\ge DQ=1/(m-1)=0{,}5$ ; stabilité acceptable :
+$A_2$ est aussi la meilleure selon $S$ et $R$. La solution de compromis est $A_2$ seule.
+
+\section{Corrélation de Spearman --- comparaison de méthodes}
+
+\begin{table}[H]
+\centering
+\caption{Matrice de Spearman (rangs du cours, p.~78)}\label{tab:spearman}
+\begin{tabular}{lccc}
+\toprule
+ & TOPSIS & VIKOR & PROMETHEE II\\
+\midrule
+TOPSIS & 1,00 & 0,77 & 0,94\\
+VIKOR & 0,77 & 1,00 & 0,60\\
+PROMETHEE II & 0,94 & 0,60 & 1,00\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Les trois coefficients du cours sont retrouvés exactement (par exemple TOPSIS--VIKOR :
+$\sum d_i^2=8$, $\rho=1-48/210=0{,}771$). Avec $n=6$, seul $\rho\ge0{,}886$ est significatif à 5\,\% :
+uniquement la paire TOPSIS--PROMETHEE II.
+
+\section{Seuil de décision --- courbe ROC}
+
+\begin{table}[H]
+\centering
+\caption{Seuils testés sur les six décisions passées}\label{tab:roc}
+\begin{tabular}{lccccc}
+\toprule
+ & Seuil $\tau$ & TPR & FPR & $d$ & $J$\\
+\midrule
+Cas 1 & 0,75 & 0,67 & 0,00 & 0,33 & 0,67\\
+Cas 2 & 0,65 & 1,00 & 0,33 & 0,33 & 0,67\\
+Cas 3 & 0,60 & 1,00 & 0,67 & 0,67 & 0,33\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Le tableau du cours est reproduit à l'identique ; les cas 1 et 2 sont à égalité et se départagent par le
+coût des erreurs. En balayant tous les seuils candidats (les scores observés), la plateforme met en
+évidence que $\tau=0{,}71$ sépare parfaitement les deux classes ($TPR=1$, $FPR=0$, $J=1$, $d=0$,
+$AUC=1$) : le choix parmi les seuils du cours n'est donc qu'une illustration, la plage optimale se situant
+dans $]0{,}69;\ 0{,}71]$.
+
+\section{Évaluation floue d'une seule alternative}
+
+ROA $=(1{,}0;\ 1{,}2;\ 1{,}5)$, liquidité $=(110;\ 120;\ 130)$, poids $(0{,}6;\ 0{,}4)$. Après
+normalisation : $(0{,}67;\ 0{,}80;\ 1{,}00)$ et $(0{,}85;\ 0{,}92;\ 1{,}00)$. La plateforme obtient
+$\tilde S=(0{,}74;\ 0{,}85;\ 1{,}00)$, $S=0{,}86$ et une largeur $c-a=0{,}26$, valeurs identiques à
+celles du cours.
+
+\section{TOPSIS flou (Chen 2000) --- recrutement d'un ingénieur}
+
+Trois candidats, trois décideurs, cinq critères (tous positifs).
+
+\begin{table}[H]
+\centering
+\caption{TOPSIS flou : poids collectifs des critères}\label{tab:chenw}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+ & $C_1$ & $C_2$ & $C_3$ & $C_4$ & $C_5$\\
+\midrule
+$\tilde w_j$ & (0,70; 0,87; 0,97) & (0,90; 1; 1) & (0,77; 0,93; 1) & (0,90; 1; 1) & (0,43; 0,63; 0,83)\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{TOPSIS flou : matrice de décision collective}\label{tab:chenx}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+ & $C_1$ & $C_2$ & $C_3$ & $C_4$ & $C_5$\\
+\midrule
+$A_1$ & (5,67; 7,67; 9,33) & (5,00; 7,00; 8,67) & (5,67; 7,67; 9,00) & (8,33; 9,67; 10) & (3,00; 5,00; 7,00)\\
+$A_2$ & (6,33; 8,33; 9,67) & (9,00; 10; 10) & (8,33; 9,67; 10) & (9,00; 10; 10) & (7,00; 8,67; 9,67)\\
+$A_3$ & (6,33; 8,00; 9,00) & (7,00; 8,67; 9,67) & (7,00; 8,67; 9,67) & (7,00; 8,67; 9,67) & (6,33; 8,33; 9,67)\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Tous les critères étant positifs, la normalisation divise chaque TFN par $c_j^*=\max_i c_{ij}$, soit
+$c_j^*=9{,}67$ pour $C_1$ et $C_5$ et $c_j^*=10$ pour $C_2$, $C_3$ et $C_4$ ; la matrice normalisée est
+ensuite pondérée par $\tilde w_j$.
+
+\begin{table}[H]
+\centering
+\caption{TOPSIS flou : distances et coefficients de proximité}\label{tab:chencc}
+\begin{tabular}{lcccc}
+\toprule
+ & $D^*$ & $D^-$ & $CC$ & Rang\\
+\midrule
+$A_1$ & 1,946 & 3,430 & 0,638 & 3\\
+$A_2$ & 1,259 & 4,106 & \textbf{0,765} & \textbf{1}\\
+$A_3$ & 1,602 & 3,771 & 0,702 & 2\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Le classement $A_2\succ A_3\succ A_1$ désigne le candidat $A_2$, conformément à l'exemple de référence de
+Chen (2000).
+
+\section{TOPSIS flou intuitionniste (exemple illustratif)}
+
+Le cours ne fournissant pas de données chiffrées pour cette méthode, nous avons construit un exemple de
+sélection de fournisseur (4 fournisseurs, 3 décideurs de poids $0{,}40$, $0{,}35$ et $0{,}25$, critères
+qualité, délai, service (+) et prix ($-$)). Les poids agrégés des critères par IFWA sont
+$(0{,}874;0{,}119)$, $(0{,}681;0{,}266)$, $(0{,}608;0{,}339)$ et $(0{,}856;0{,}132)$. Les coefficients
+de proximité obtenus sont $C=(0{,}794;\ 0{,}708;\ 0{,}407;\ 0{,}114)$, d'où $F_1\succ F_2\succ F_3\succ
+F_4$. Les tests unitaires vérifient en outre des propriétés de l'opérateur (idempotence de IFWA).
+
+\section{Synthèse}
+
+\begin{table}[H]
+\centering
+\caption{Synthèse de la validation}\label{tab:synthese}
+\begin{tabularx}{\linewidth}{lXl}
+\toprule
+\textbf{Cas (page)} & \textbf{Grandeur comparée} & \textbf{Résultat}\\
+\midrule
+AHP voiture (32--34) & $CR<0{,}1$, voiture 1 retenue & \ok\\
+BWM fournisseur (37--43) & $\xi^*\approx0{,}08$ et ordre des critères & \ok\\
+ & poids numériques de la p.~42 & \ecart{} (commenté)\\
+CRITIC (51) & poids, $C_4$ dominant & calculé\\
+WASPAS (58) & $A_4$ meilleure pour WSM, WPM, WASPAS & calculé\\
+TOPSIS (65) & M2 sélectionnée & calculé\\
+VIKOR (72) & $A_2$ compromis, C1 et C2 vérifiées & calculé\\
+Spearman (78--79) & 0,77 ; 0,94 ; 0,60 & \ok\\
+ROC (85--88) & TPR, FPR, $d$, $J$ des trois cas & \ok\\
+Floue une alternative (134) & $\tilde S=(0{,}74;0{,}85;1)$, $S=0{,}86$ & \ok\\
+Chen (140--142) & $A_2\succ A_3\succ A_1$ & calculé\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\emph{Calculé} signifie que le cours pose l'exercice sans en publier la solution ; les résultats ont
+alors été vérifiés par des propriétés indépendantes (somme des poids, flux nets nuls, cohérence entre
+méthodes) et par un recalcul manuel des premières étapes.
+
+% =====================================================================
+\chapter{Analyse comparative et de sensibilité}\label{ch:comparaison}
+% =====================================================================
+
+Pour illustrer les bonnes pratiques du cours, nous appliquons les six méthodes de classement au problème
+TOPSIS du choix d'une voiture (poids $(0{,}2;0{,}1;0{,}4;0{,}3)$), puis étudions la robustesse du
+classement.
+
+\section{Comparaison des méthodes}
+
+\begin{table}[H]
+\centering
+\caption{Rangs obtenus par les six méthodes (choix d'une voiture)}\label{tab:comparaison}
+\begin{tabular}{lcccccc|c}
+\toprule
+ & WSM & WPM & WASPAS & TOPSIS & VIKOR & PROMETHEE II & Borda\\
+\midrule
+M1 & 1 & 1 & 1 & 3 & 1 & 1 & \textbf{1}\\
+M2 & 2 & 2 & 2 & 1 & 2 & 2 & 2\\
+M3 & 4 & 4 & 4 & 4 & 4 & 4 & 4\\
+M4 & 3 & 3 & 3 & 2 & 3 & 3 & 3\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cinq méthodes sur six désignent M1 ; seule TOPSIS place M2 en tête. Le coefficient de Spearman entre TOPSIS
+et chacune des autres méthodes vaut $\rho=0{,}40$ ($\sum d_i^2=6$), alors que les cinq autres méthodes
+sont parfaitement concordantes entre elles ($\rho=1$). Pour VIKOR, $Q=(0;\ 0{,}821;\ 1;\ 0{,}857)$ :
+M1 est solution de compromis et vérifie C1 ($0{,}821\ge 1/3$) et C2. Pour PROMETHEE II (fonction
+usuelle), les flux nets sont $\phi=(0{,}333;\ 0{,}033;\ -0{,}333;\ -0{,}033)$.
+
+\paragraph{Interprétation.} La divergence de TOPSIS s'explique par deux différences de construction :
+la normalisation vectorielle (au lieu de $x/\max$ ou $\min/x$) et l'agrégation par distances euclidiennes
+aux deux solutions idéales. M1 domine fortement sur l'économie de carburant (critère le plus lourd) et la
+fiabilité, mais elle est pénalisée sur le coût, où elle se rapproche de l'anti-idéal ; la distance
+euclidienne amplifie cet écart, alors que les méthodes additives le compensent. C'est exactement la
+situation que le cours décrit : un même problème peut produire des classements différents selon la
+méthode, d'où la nécessité de les comparer et de justifier le choix final.
+
+\section{Sensibilité aux poids (TOPSIS)}
+
+\begin{table}[H]
+\centering
+\caption{Alternative classée première selon le poids d'un critère (TOPSIS, pas de 0,005)}\label{tab:sens}
+\begin{tabular}{lcl}
+\toprule
+\textbf{Critère} & \textbf{Poids actuel} & \textbf{Alternative en tête selon l'intervalle du poids}\\
+\midrule
+Style & 0,20 & M4 sur $[0;\ 0{,}185]$, M2 sur $[0{,}19;\ 0{,}415]$, M3 sur $[0{,}42;\ 1]$\\
+Fiabilité & 0,10 & M2 sur $[0;\ 0{,}18]$, M1 sur $[0{,}185;\ 1]$\\
+Économie carburant & 0,40 & M2 sur $[0;\ 0{,}47]$, M4 sur $[0{,}475;\ 0{,}515]$, M1 sur $[0{,}52;\ 1]$\\
+Coût & 0,30 & M1 sur $[0;\ 0{,}185]$, M2 sur $[0{,}19;\ 0{,}32]$, M4 sur $[0{,}325;\ 1]$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Le poids actuel du style ($0{,}20$) et celui du coût ($0{,}30$) sont tous deux à moins de $0{,}03$ d'un point
+d'inversion : la sélection de M2 par TOPSIS est donc \textbf{fragile}.
+
+\section{Simulation de Monte Carlo}
+
+Avec 2\,000 tirages $w'\sim\text{Dirichlet}(50\,w)$, la probabilité d'être classée première sous TOPSIS est
+de 47,6\,\% pour M2, 42,5\,\% pour M4, 9,3\,\% pour M1 et 0,8\,\% pour M3 ; la corrélation de Spearman
+moyenne avec le classement de référence est de 0,73. Ce résultat confirme l'analyse précédente : M2 et M4
+sont pratiquement à égalité sous TOPSIS, et une petite incertitude sur les poids suffit à les départager.
+
+\section{Recommandation}
+
+Au vu de la concordance de cinq méthodes sur six, du consensus de Borda et de la fragilité du classement
+TOPSIS, la recommandation la plus défendable est \textbf{M1}, en signalant au décideur que le résultat
+dépend sensiblement du poids attribué au coût et au style. Cette démarche --- plusieurs méthodes,
+comparaison des rangs, sensibilité, justification --- est celle que la plateforme rend systématique.
+
+% =====================================================================
+\chapter{Tests et assurance qualité}\label{ch:tests}
+% =====================================================================
+
+\section{Tests automatisés}
+
+Le fichier \texttt{tests/test\_course\_examples.py} contient quinze tests, exécutables avec
+\texttt{python -m pytest tests} ou directement avec \texttt{python tests/test\_course\_examples.py}
+(aucune dépendance supplémentaire). Ils couvrent :
+\begin{itemize}
+  \item les valeurs publiées du cours : $\xi^*$ BWM, Spearman (0,77 ; 0,94 ; 0,60), tableau ROC des trois
+        cas, évaluation floue d'une alternative ;
+  \item les décisions des exercices : AHP (voiture 1, $CR<0{,}1$), WASPAS ($A_4$), TOPSIS (rangs
+        $[3,1,4,2]$), VIKOR ($S$, $Q$, compromis $A_2$), CRITIC ($C_4$ dominant), Chen
+        ($A_2\succ A_3\succ A_1$) ;
+  \item des propriétés mathématiques : AHP exact sur une matrice parfaitement cohérente ($CR=0$), somme
+        nulle des flux nets PROMETHEE, idempotence de IFWA, conservation des rapports de poids lors d'une
+        perturbation, utilités MAUT.
+\end{itemize}
+Les quinze tests passent.
+
+\section{Tests de l'interface}
+
+L'ensemble des pages a été exécuté avec le module de test de Streamlit (\texttt{streamlit.testing.v1.AppTest}) :
+navigation dans les sept pages, chargement de chacun des cinq exercices dans chaque page, exécution des six
+méthodes de classement, des quatre modes d'évaluation absolue, des dix études de cas, changement du nombre
+de décideurs dans les méthodes floues, modèles BWM linéaire et non linéaire, sensibilité et Monte Carlo
+pour plusieurs méthodes. Aucune exception n'a été levée. Le serveur Streamlit démarre et répond
+correctement.
+
+\section{Contrôles de cohérence à l'exécution}
+
+Le module \texttt{utils/validation.py} bloque ou signale : matrice non numérique ou incomplète, moins de
+deux alternatives, noms dupliqués, critère constant, valeurs non positives incompatibles avec WPM ou
+l'entropie, matrice AHP non réciproque ou hors échelle de Saaty, incohérences BWM ($a_{BB}\ne1$, maximum
+de BO ne portant pas sur $W$, $a_{BW}$ différent dans les deux vecteurs), TFN non ordonnés, IFN avec
+$\mu+\nu>1$, poids négatifs (et renormalisation automatique si $\sum w_j\ne1$).
+
+% =====================================================================
+\chapter{Limites et perspectives}\label{ch:limites}
+% =====================================================================
+
+\section{Limites}
+\begin{itemize}
+  \item \textbf{ELECTRE III} n'est pas implémentée ; seul PROMETHEE représente les méthodes de
+        surclassement. Les diapositives correspondantes n'en détaillant pas la formulation, PROMETHEE suit
+        la formulation standard de Brans.
+  \item Les méthodes floues sont limitées aux nombres triangulaires et intuitionnistes ; les ensembles
+        flous pythagoriciens, q-rung orthopair, picturaux et hésitants présentés dans le cours ne sont pas
+        encore exploités dans une méthode de classement.
+  \item Le MCDM de groupe n'est disponible que dans les méthodes floues ; les méthodes \emph{crisp}
+        supposent un décideur unique.
+  \item Les critères sont supposés indépendants (pas d'ANP).
+  \item L'exemple de TOPSIS flou intuitionniste et l'exemple MAUT sont illustratifs, faute de données
+        chiffrées dans le support.
+\end{itemize}
+
+\section{Perspectives}
+\begin{itemize}
+  \item Ajouter ELECTRE III (indices de concordance, discordance, crédibilité et distillation).
+  \item Étendre TOPSIS aux ensembles flous pythagoriciens et q-ROF, et ajouter AHP et BWM flous.
+  \item Intégrer les scénarios \og MCDM et IA \fg{} du cours : apprentissage d'un modèle sur les scores MCDM
+        et mise à jour des poids par SHAP ($w_j^{new}=\alpha w_j^{AHP}+(1-\alpha)|\phi_j|/\sum|\phi_j|$),
+        MCDM dynamique alimenté par des prévisions de séries temporelles, extraction de scores à partir de
+        textes par un LLM.
+  \item Générer automatiquement un rapport de décision (PDF) reprenant les étapes et la justification.
+\end{itemize}
+
+% =====================================================================
+\chapter*{Conclusion générale}
+\addcontentsline{toc}{chapter}{Conclusion générale}
+% =====================================================================
+
+Nous avons conçu et réalisé une plateforme d'aide à la décision multicritère qui couvre l'ensemble du
+processus présenté dans le cours : formalisation du problème, pondération des critères par des méthodes
+subjectives, objectives ou hybrides, classement par des méthodes compensatoires et de surclassement,
+évaluation absolue d'une alternative isolée, traitement de l'imprécision par la logique floue et analyse de
+robustesse.
+
+Une architecture en couches sépare le moteur de calcul, entièrement testable, de l'interface Streamlit, qui
+expose chaque étape intermédiaire avec les formules du cours. La confrontation systématique aux exercices
+des diapositives montre que la plateforme reproduit les résultats publiés ; le seul écart relevé (poids BWM
+de l'exemple du fournisseur) a été analysé et attribué au support lui-même, la valeur optimale de $\xi$ étant
+retrouvée et l'optimum du modèle étant unique.
+
+Au-delà du calcul, l'étude comparative du choix d'une voiture montre l'intérêt pratique de l'outil : cinq
+méthodes sur six désignent la même alternative, TOPSIS s'en écarte et l'analyse de sensibilité révèle que
+son choix est fragile. La plateforme permet ainsi d'appliquer concrètement les bonnes pratiques du cours :
+ne jamais se fier à une seule méthode, mesurer l'accord entre classements, tester la stabilité face aux
+poids et justifier explicitement la décision.
+
+% =====================================================================
+\appendix
+% =====================================================================
+
+\chapter{Installation et lancement}
+
+\begin{lstlisting}[language=bash,numbers=none,caption={Installation et lancement}]
+cd mcdm_app
+pip install -r requirements.txt
+streamlit run app.py              # ouvre http://localhost:8501
+python tests/test_course_examples.py
+\end{lstlisting}
+
+Dépendances : \texttt{streamlit>=1.40}, \texttt{numpy>=1.26}, \texttt{scipy>=1.11},
+\texttt{pandas>=2.1}, \texttt{plotly>=5.20}.
+
+\chapter{Format d'import CSV}
+
+La première colonne contient les noms des alternatives, la première ligne les noms des critères. Une ligne
+optionnelle nommée \texttt{type} indique le sens de chaque critère (\texttt{+} ou \texttt{-}) ; à défaut,
+tous les critères sont considérés comme positifs. Le séparateur (virgule ou point-virgule) est détecté
+automatiquement. L'export produit le même format.
+
+\begin{lstlisting}[language={},numbers=none,caption={Exemple de fichier CSV}]
+,Style,Fiabilite,Economie carburant,Cout
+M1,7,9,9,8
+M2,8,7,8,7
+M3,9,6,8,9
+M4,6,7,8,6
+type,+,+,+,-
+\end{lstlisting}
+
+\chapter{Correspondance cours -- code}
+
+\begin{table}[H]
+\centering
+\caption{Correspondance entre les méthodes du cours et les fonctions}\label{tab:corresp}
+\begin{tabular}{lll}
+\toprule
+\textbf{Méthode} & \textbf{Pages du cours} & \textbf{Fonction}\\
+\midrule
+AHP & 23--34 & \texttt{weighting.ahp}, \texttt{weighting.ahp\_rank}\\
+BWM & 35--43 & \texttt{weighting.bwm}, \texttt{weighting.bwm\_nonlinear}\\
+Entropie & 44--45 & \texttt{weighting.entropy}\\
+CRITIC & 46--51 & \texttt{weighting.critic}\\
+Hybride & 22, 92 & \texttt{weighting.hybrid}\\
+WSM / WPM / WASPAS & 53--59 & \texttt{crisp\_ranking.wsm / wpm / waspas}\\
+TOPSIS & 60--65 & \texttt{crisp\_ranking.topsis}\\
+VIKOR & 66--72 & \texttt{crisp\_ranking.vikor}\\
+PROMETHEE & 74 & \texttt{outranking.promethee}\\
+Spearman & 77--79 & \texttt{sensitivity.spearman\_matrix}\\
+MAUT, seuil & 81--84 & \texttt{single\_alternative.maut}, \texttt{decide}\\
+ROC, Youden & 85--88 & \texttt{single\_alternative.roc\_table}, \texttt{best\_thresholds}\\
+Distance à l'idéal & 89 & \texttt{single\_alternative.distance\_to\_ideal}\\
+TFN, une alternative & 134 & \texttt{single\_alternative.fuzzy\_single}\\
+TOPSIS flou (Chen) & 135--142 & \texttt{fuzzy\_mcdm.fuzzy\_topsis\_chen}\\
+IFWA, TOPSIS intuitionniste & 116, 143--150 & \texttt{fuzzy\_mcdm.ifwa}, \texttt{if\_topsis}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
